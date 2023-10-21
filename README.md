@@ -1,0 +1,2 @@
+# scripts
+💻 Shell scripts
