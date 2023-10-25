@@ -7,7 +7,8 @@ import os
 from uuid import uuid4
 
 from md2gemini import md2gemini
-from typing import Any
+from bs4 import BeautifulSoup
+
 from enum import Enum
 from sys import argv, stderr, stdout
 
@@ -26,40 +27,13 @@ METADATA_REGEXS = {
         re.compile(rf"(title):\s+(.+)\n"),
         str
     ),
-    "description": (
-        re.compile(rf"(description):\s+(.+)\n"),
+    "date": (
+        re.compile(rf"(date):\s+(.+)\n"),
         str
     ),
-    "updated_at": (
-        re.compile(rf"(updatedAt):\s+(.+)\n"),
-        str
-    ),
-    "categories": (
-        re.compile(rf"(categories):\s+\[(.+)\]", re.DOTALL),
-        list
-    ),
-    "author": (
-        re.compile(rf"(author):\s+(.+)\n"),
-        str
-    )
 }
 
-AVAILABLES_LANG = (
-    "tsx",
-    "jsx",
-    "typescript",
-    "scss",
-    "bash",
-    "markdown",
-    "json",
-    "rust",
-    "asm6502",
-    "docker",
-    "python"
-)
-
 BLOCK_RE = "```%s[\\s\S]*?```"
-ALL_BLOCKS = BLOCK_RE % ("[" + "|".join(AVAILABLES_LANG) + "]")
 
 class PostMetadata:
     """
@@ -74,9 +48,6 @@ class PostMetadata:
     def parse(self):
         """
             Parse `self.src`
-            
-            It must have the same header than posts
-            in `content/posts/`
         """
         
         if not self.src:
@@ -178,6 +149,10 @@ class PostConvert:
             Parse
         """
         
+        if not self.data:
+            return
+        
+        self.data = self.data.replace("&nbsp;", "")
         self._metadata.parse()
     
     def _metadata_dump(self):
@@ -231,15 +206,12 @@ class GeminiConvert(PostConvert):
         self.dest = self.dest.replace("```", tmp)
         self.dest = self.dest.replace("`", "")
         self.dest = self.dest.replace(tmp, "```")
+        
+        self.dest = correct_gaps(self.dest)
 
     def _metadata_dump(self):
         self.print("# " + self._metadata.title)
-        self.print("## " + self._metadata.description)
-        self.print("### ", " - ".join(self._metadata.categories))
-        self.print(
-            "By " + self._metadata.author + 
-            ", edited " + self._metadata.updated_at
-        )
+        self.print("## " + self._metadata.date)
     
     def dump(self):
         self._metadata_dump()
@@ -251,7 +223,7 @@ class GopherConvert(PostConvert):
     """
     
     HTTP_SOURCE_RE = re.compile(
-        rf"(\[.+\])(\(https:\/\/.+?\))",
+        rf"(\[.+\])(\(https?:\/\/.+?\))",
     )
     P_RE = r"<p .+?>.+?<\/p>"
     DEFAULT_HOSTPAGE = "tilde.pink"
@@ -324,21 +296,21 @@ class GopherConvert(PostConvert):
         
         self.dest = self.data
 
-        for block in AVAILABLES_LANG:
-            self.dest = self.dest.replace("```" + block, "")
-
-        self.dest = self.dest.replace("```", "")
-        
         self.__process_redirects()
         self.__process_p_tags()
-            
+        
+        self.dest = BeautifulSoup(
+            self.dest,
+            features="html.parser"
+        ).get_text()
+
+        self.dest = correct_gaps(self.dest)
+        
     def _metadata_dump(self):
         self.print(self._metadata.title)
-        self.print(self._metadata.description)
-        self.print(" - ".join(self._metadata.categories))
-        self.print("By " + self._metadata.author) 
+        self.print(self._metadata.date)
         
-        msg = "Last edit: " + self._metadata.updated_at
+        msg = "Last edit: " + self._metadata.date
         self.print(msg)
         self.print("-" * len(msg))
     
@@ -350,6 +322,29 @@ TO_CONVERT = {
     Document.GOPHER: GopherConvert,
     Document.GEMINI: GeminiConvert
 }
+
+def correct_gaps(data: str, n: int=2) -> str:
+    """
+        Remove every extra empty lines
+    """
+    
+    ret = []
+    
+    lines = data.split("\n")
+    empty_amount = 0
+    
+    for line in lines:
+        is_empty = len(line.strip()) == 0
+
+        if is_empty:
+            empty_amount += 1
+        else:
+            empty_amount = 0
+
+        if empty_amount < n:
+            ret.append(line)
+    
+    return "\n".join(ret)
 
 class PostsConvert:
     """
@@ -370,8 +365,12 @@ class PostsConvert:
                 path = os.path.join(root, file)
                 converter = self.__type()
                 
-                converter.load_from_file(path)
-                
+                try:
+                    converter.load_from_file(path)
+                except Exception as error:
+                    print(error, file=stderr)
+                    continue
+                    
                 dest = file.replace(
                     ".md",
                     "." + converter.document.value
@@ -410,10 +409,7 @@ def main():
         return
     
     try:
-        a = PostsConvert(
-            dir,
-            converter_proto
-        )
+        a = PostsConvert(dir, converter_proto)
         a.dump_to_files(dest_dir)
     except Exception as error:
         print(error, file=stderr)
