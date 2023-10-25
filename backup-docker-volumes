@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+# Current date
+DATE=$(date "+%Y-%m-%d")
+# Default source point (if there are no CLI arguments)
+DEFAULT_SOURCE_POINTS=( ${HOME} )
+# https://github.com/theobori/dockerv
+#
+# dockerv source points
+SOURCE_POINTS=${@:-${DEFAULT_SOURCE_POINTS[@]}}
+# Retention days amount
+RETENTION=3
+# Backup directory path
+BACKUP_DIRECTORY="/backup"
+# dockerv destination point
+DESTINATION_POINT="${BACKUP_DIRECTORY}/docker-volumes-${DATE}.tar.gz"
+
+# Exporting and packing Docker volumes
+# selected with the source points as a Tarball
+function export_docker_volumes() {
+    local args=""
+
+    for source_point in ${SOURCE_POINTS[@]}; do
+        args+="--src \"${source_point}\" "
+    done
+
+    dockerv export \
+        ${args} \
+        --dest ${DESTINATION_POINT} \
+        --force
+}
+
+# Deleting files older than ${RETENTION} days
+function purge_backups() {
+    find ${BACKUP_DIRECTORY} \
+        -type f \
+        -mtime +${RETENTION} \
+        -delete
+}
+
+function main() {
+    test -d ${BACKUP_DIRECTORY} || mkdir -p ${BACKUP_DIRECTORY}
+
+    export_docker_volumes || exit 1
+    purge_backups
+}
+
+main

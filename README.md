@@ -6,5 +6,5 @@ This repository contains magic scripts used for the website.
 
 ## 🎉 Tasks
 
-- [ ] Backup script
+- [x] Backup scripts
 - [x] Update `markdown-convert`

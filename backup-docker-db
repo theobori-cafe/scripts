@@ -1,0 +1,186 @@
+#!/usr/bin/env bash
+
+# Script version
+VERSION=0.0.1
+# Script filename
+FILENAME=$(basename $0)
+# Current date
+DATE=$(date "+%Y-%m-%d")
+# Retention days amount
+RETENTION=3
+# Backup directory path
+BACKUP_DIRECTORY="/backup"
+
+# For these variables, you can fill them inside the file
+# or using CLI arguments.
+
+# Database username
+USERNAME=
+# Database password
+PASSWORD=
+# Database name
+DATABASE=
+# Database engine
+ENGINE=
+# Docker container id / name
+CONTAINER=
+# Operation kind (export, import)
+OPERATION=export
+# File path to the import file
+# (optional is ${OPERATION} is export)
+DB_FILE=
+
+# Destination filename without the extension
+DESTINATION=
+
+# Help display function
+function print_help() {
+    cat <<EOF
+${FILENAME}
+Version ${VERSION}
+
+Optional arguments
+  -h        Show this help message
+  -u        Database user
+  -p        Databse password
+  -d        Database name
+  -e        Database engine (mysql, postgresql)
+  -c        Docker container
+  -f        Database file (import only)
+  -k        Operation kind (import, export)
+  -v        Print the script version
+EOF
+}
+
+# Parsing the CLI arguments with the built-in getopts command
+function parse() {
+    while getopts "k:f:c:e:u:p:d:hvn" arg; do
+        case ${arg} in
+            u) USERNAME=${USERNAME:-$OPTARG} ;;
+
+            e) ENGINE=${ENGINE:-$OPTARG} ;;
+
+            p) PASSWORD=${PASSWORD:-$OPTARG} ;;
+
+            d) DATABASE=${DATABASE:-$OPTARG} ;;
+
+            c) CONTAINER=${CONTAINER:-$OPTARG} ;;
+
+            f) DB_FILE=${DB_FILE:-$OPTARG} ;;
+
+            k) OPERATION=${$OPTARG} ;;
+
+            h)
+                print_help
+                exit 0
+                ;;
+
+            v)
+                echo ${FILENAME} -- ${VERSION}
+                exit 0
+                ;;
+        esac
+    done
+
+    if [[ -z ${CONTAINER} ]]; then
+        echo "You must set a container id/name" >&2
+        return 1
+    fi
+
+    DESTINATION=${BACKUP_DIRECTORY}/${ENGINE}-${CONTAINER}-${DATE}
+}
+
+# Export a MySQL database inside a Docker container as a SQL file
+function export_mysl() {
+    docker exec ${CONTAINER} \
+        mysqldump \
+        -u ${USERNAME} \
+        --password=${PASSWORD} \
+        ${DATABASE} > ${DESTINATION}.sql
+}
+
+# Import a SQL file into a Docker container containing a MySQL database
+function import_mysql() {
+    cat ${DB_FILE} | docker exec -i ${CONTAINER} \
+        mysql -u ${USERNAME} \
+        --password=${PASSWORD} \
+        ${DATABASE}
+}
+
+# Export a PostgreSQL database inside a Docker container as a SQL file
+function export_postgresql() {
+    docker exec ${CONTAINER} \
+        pg_dump \
+        -U ${USERNAME} \
+        ${DATABASE} > ${DESTINATION}.sql
+}
+
+# Import a SQL file into a Docker container containing a PostgreSQL database
+function import_postgresql() {
+    cat ${DB_FILE} | docker exec -i ${CONTAINER} \
+        psql \
+        -d ${DATABASE} \
+        -U ${USERNAME}
+}
+
+# Deleting files older than ${RETENTION} days
+function purge_backups() {
+    find ${BACKUP_DIRECTORY} \
+        -type f \
+        -mtime +${RETENTION} \
+        -delete
+}
+
+# Export manager
+function _export() {
+    case ${ENGINE} in
+        mysql) export_mysl ;;
+        postgresql) export_postgresql ;;
+        *) return 1
+    esac
+
+    echo "Successfully exported the database from ${CONTAINER} as ${DESTINATION}"
+
+    return 0
+}
+
+# Import manager
+function _import() {
+    case ${ENGINE} in
+        mysql) import_mysql ;;
+        postgresql) import_postgresql ;;
+        *) return 1
+    esac
+
+    echo "Successfully imported ${DB_FILE} into ${CONTAINER}"
+
+    return 0
+}
+
+# Operation controller
+function _exec() {
+    local call=
+
+    case ${OPERATION} in
+        export) call=_export ;;
+        import) call=_import ;;
+    esac
+
+    if ! ${call}; then
+        echo "Invalid database engine, check -h" >&2
+        return 1
+    fi
+
+    return 0
+}
+
+function main() {
+    parse $@ || exit 1
+
+    test -d ${BACKUP_DIRECTORY} || mkdir -p ${BACKUP_DIRECTORY}
+    
+    _exec || exit 1
+    purge_backups
+}
+
+main $@
