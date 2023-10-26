@@ -16,7 +16,7 @@ SOURCE_POINTS=( $@ )
 # Retention days amount
 RETENTION=3
 # Backup directory path
-BACKUP_DIRECTORY="/backup"
+BACKUP_DIRECTORY=${BACKUP_DIRECTORY:-"/backup"}
 # dockerv destination point
 DESTINATION_POINT="${BACKUP_DIRECTORY}/docker-volumes-${DATE}.tar.gz"
 
@@ -63,7 +63,8 @@ function parse() {
 function export_docker_volumes() {
     local args=""
 
-    for source_point in ${SOURCE_POINTS[@]}; do
+    for source_point in ${SOURCE_POINTS[@]}
+    do
         args+="--src \"${source_point}\" "
     done
 

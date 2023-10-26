@@ -9,7 +9,7 @@ DATE=$(date "+%Y-%m-%d")
 # Retention days amount
 RETENTION=3
 # Backup directory path
-BACKUP_DIRECTORY="/backup"
+BACKUP_DIRECTORY=${BACKUP_DIRECTORY:-"/backup"}
 
 # For these variables, you can fill them inside the file
 # or using CLI arguments.
