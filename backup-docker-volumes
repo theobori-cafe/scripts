@@ -14,7 +14,7 @@ DATE=$(date "+%Y-%m-%d")
 # instead of passing CLI arguments
 SOURCE_POINTS=( $@ )
 # Retention days amount
-RETENTION=3
+RETENTION=${RETENTION:-3}
 # Backup directory path
 BACKUP_DIRECTORY=${BACKUP_DIRECTORY:-"/backup"}
 # dockerv destination point
@@ -83,12 +83,16 @@ function purge_backups() {
         -type f \
         -mtime +${RETENTION} \
         -delete
+    
+    echo "Deleted files older than ${RETENTION} days"
 }
 
 function main() {
     parse $@ || exit 1
 
     test -d ${BACKUP_DIRECTORY} || mkdir -p ${BACKUP_DIRECTORY}
+
+    echo "Starting Docker volumes export"
 
     export_docker_volumes || exit 1
     purge_backups

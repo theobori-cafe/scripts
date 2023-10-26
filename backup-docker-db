@@ -7,7 +7,7 @@ FILENAME=$(basename $0)
 # Current date
 DATE=$(date "+%Y-%m-%d")
 # Retention days amount
-RETENTION=3
+RETENTION=${RETENTION:-3}
 # Backup directory path
 BACKUP_DIRECTORY=${BACKUP_DIRECTORY:-"/backup"}
 
@@ -130,6 +130,8 @@ function purge_backups() {
         -type f \
         -mtime +${RETENTION} \
         -delete
+    
+    echo "Deleted files older than ${RETENTION} days"
 }
 
 # Export manager
@@ -140,7 +142,7 @@ function _export() {
         *) return 1
     esac
 
-    echo "Successfully exported the database from ${CONTAINER} as ${DESTINATION}"
+    echo "Exported the database from ${CONTAINER} as ${DESTINATION}"
 }
 
 # Import manager
@@ -151,7 +153,7 @@ function _import() {
         *) return 1
     esac
 
-    echo "Successfully imported ${DB_FILE} into ${CONTAINER}"
+    echo "Imported ${DB_FILE} into ${CONTAINER}"
 }
 
 # Operation controller
@@ -174,6 +176,8 @@ function main() {
     parse $@ || exit 1
 
     test -d ${BACKUP_DIRECTORY} || mkdir -p ${BACKUP_DIRECTORY}
+
+    echo "Starting database ${OPERATION}"
     
     _exec || exit 1
     purge_backups
