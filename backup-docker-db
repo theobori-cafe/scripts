@@ -82,7 +82,8 @@ function parse() {
         esac
     done
 
-    if [[ -z ${CONTAINER} ]]; then
+    if [[ -z ${CONTAINER} ]]
+    then
         echo "You must set a container id/name" >&2
         return 1
     fi
@@ -140,8 +141,6 @@ function _export() {
     esac
 
     echo "Successfully exported the database from ${CONTAINER} as ${DESTINATION}"
-
-    return 0
 }
 
 # Import manager
@@ -153,8 +152,6 @@ function _import() {
     esac
 
     echo "Successfully imported ${DB_FILE} into ${CONTAINER}"
-
-    return 0
 }
 
 # Operation controller
@@ -166,12 +163,11 @@ function _exec() {
         import) call=_import ;;
     esac
 
-    if ! ${call}; then
+    if ! ${call}
+    then
         echo "Invalid database engine, check -h" >&2
         return 1
     fi
-
-    return 0
 }
 
 function main() {
