@@ -68,7 +68,7 @@ function parse() {
 
             f) DB_FILE=${DB_FILE:-$OPTARG} ;;
 
-            k) OPERATION=${$OPTARG} ;;
+            k) OPERATION=${OPTARG} ;;
 
             h)
                 print_help
