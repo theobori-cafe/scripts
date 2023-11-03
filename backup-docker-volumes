@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # Script version
 VERSION=0.0.1
 # Script filename
@@ -90,7 +92,7 @@ function purge_backups() {
 function main() {
     parse $@ || exit 1
 
-    test -d ${BACKUP_DIRECTORY} || mkdir -p ${BACKUP_DIRECTORY}
+    mkdir -p ${BACKUP_DIRECTORY}
 
     echo "Starting Docker volumes export"
 

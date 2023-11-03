@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # Script version
 VERSION=0.0.1
 # Script filename
