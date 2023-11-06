@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Script version
+VERSION=0.0.1
+# Script filename
+FILENAME=$(basename $0)
+
+# Start date range
+START_DATE=${1:-$(date --date='-1 month' -I)}
+# End date range
+END_DATE=${2:-$(date --date='-+ month' -I)}
+# Output report
+OUTPUT=${3:-"report.html"}
+# Starting point
+STARTING_POINT=${4:-"/var/log/nginx/access.log"}
+
+function print_help() {
+    cat <<EOF
+${FILENAME}
+Version ${VERSION}
+
+Arguments
+${FILENAME} <start_date> <end_date> <output path> <file(s)/dir>
+EOF
+} 
+
+function report() {
+    local files=$(find ${STARTING_POINT} -maxdepth 1 -newerct "${START_DATE}" ! -newerct "${END_DATE}")
+
+    zcat -f ${files} \
+        | goaccess -a -o ${OUTPUT} --log-format=COMBINED
+}
+
+# Current week date args
+# $(date --date='-1 week' -I) $(date --date='+1 week' -I)
+#
+# Current day date args
+# $(date -I) $(date --date='+1 day' -I)
+#
+# Usage example
+#
+# ./report-range "$(date --date='-1 month' -I)" \
+#     "$(date --date='+1 month' -I)" \
+#     "report.html" \
+#     "/home/nagi/tests/gocasses/"
+
+# Help display function
+
+function main() {
+    [[ ${#@} -lt 3 ]] && print_help && exit 1
+    
+    report ${@}
+}
+
+main $@

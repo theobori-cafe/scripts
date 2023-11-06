@@ -7,7 +7,8 @@ INSTALL_DIR = $(PREFIX_DIR)/bin
 OPT_DIR = $(PREFIX_DIR)/opt/scripts
 
 SCRIPTS = backup-docker-db \
-	backup-docker-volumes
+	backup-docker-volumes \
+	report-range
 
 SCRIPTS_LINKS = $(foreach script, $(SCRIPTS), $(INSTALL_DIR)/$(script))
 
