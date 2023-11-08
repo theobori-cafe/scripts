@@ -18,17 +18,9 @@ init:
 	test -d $(INSTALL_DIR) || mkdir -p $(INSTALL_DIR)
 	test -d $(OPT_DIR) || mkdir -p $(OPT_DIR)
 
-####################
-# Install scripts
-####################
-
 install: init
 	cp -f $(SCRIPTS) $(OPT_DIR)
 	ln -s $(OPT_DIR)/* $(INSTALL_DIR)
-
-####################
-# Uninstall scripts
-####################
 
 clean:
 	$(RM) $(OPT_DIR)/*
