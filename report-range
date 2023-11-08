@@ -10,11 +10,11 @@ FILENAME=$(basename $0)
 # Start date range
 START_DATE=${1:-$(date --date='-1 month' -I)}
 # End date range
-END_DATE=${2:-$(date --date='-+ month' -I)}
+END_DATE=${2:-$(date --date='+1 month' -I)}
 # Output report
 OUTPUT=${3:-"report.html"}
 # Starting point
-STARTING_POINT=${4:-"/var/log/nginx/access.log"}
+STARTING_POINT=${4:-"/var/log/nginx/access.log*"}
 # Target domain and subdomains only
 GREP_FILTER=${GREP_FILTER:-"theobori.cafe"}
 
@@ -26,11 +26,20 @@ Version ${VERSION}
 
 Arguments
 ${FILENAME} <start_date> <end_date> <output path> <file(s)/dir>
+
+The following environment variables are overridable:
+- GREP_FILTER
 EOF
 } 
 
 report() {
     local files=$(find ${STARTING_POINT} -maxdepth 1 -newerct "${START_DATE}" ! -newerct "${END_DATE}")
+
+    if [[ -z ${files} ]]
+    then
+        echo "Missing files to process !"
+        exit 1
+    fi
 
     zcat -f ${files} \
         | grep ${GREP_FILTER} \
@@ -45,17 +54,22 @@ report() {
 #
 # Usage example
 #
-# ./report-range "$(date --date='-1 month' -I)" \
+# ./report-range \
+#     "$(date --date='-1 month' -I)" \
 #     "$(date --date='+1 month' -I)" \
 #     "report.html" \
-#     "/home/nagi/tests/gocasses/"
+#     "/home/user/tests/gocasses/"
 
 # Help display function
 
 main() {
-    [[ ${#@} -lt 3 ]] && print_help && exit 1
+    if [[ ${#@} -lt 3 ]]
+    then
+        print_help
+        exit 1
+    fi
     
-    report ${@}
+    report
 }
 
-main $@
+main ${@}
