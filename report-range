@@ -33,7 +33,7 @@ EOF
 } 
 
 report() {
-    local files=$(find ${STARTING_POINT} -maxdepth 1 -newerct "${START_DATE}" ! -newerct "${END_DATE}")
+    local files=$(find ${STARTING_POINT} -maxdepth 1 -newermt "${START_DATE}" ! -newermt "${END_DATE}")
 
     if [[ -z ${files} ]]
     then
