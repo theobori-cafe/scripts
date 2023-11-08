@@ -36,7 +36,7 @@ DB_FILE=
 DESTINATION=
 
 # Help display function
-function print_help() {
+print_help() {
     cat <<EOF
 ${FILENAME}
 Version ${VERSION}
@@ -55,7 +55,7 @@ EOF
 }
 
 # Parsing the CLI arguments with the built-in getopts command
-function parse() {
+parse() {
     while getopts "k:f:c:e:u:p:d:hvn" arg; do
         case ${arg} in
             u) USERNAME=${USERNAME:-$OPTARG} ;;
@@ -94,7 +94,7 @@ function parse() {
 }
 
 # Export a MySQL database inside a Docker container as a SQL file
-function export_mysl() {
+export_mysl() {
     docker exec ${CONTAINER} \
         mysqldump \
         -u ${USERNAME} \
@@ -103,7 +103,7 @@ function export_mysl() {
 }
 
 # Import a SQL file into a Docker container containing a MySQL database
-function import_mysql() {
+import_mysql() {
     cat ${DB_FILE} | docker exec -i ${CONTAINER} \
         mysql -u ${USERNAME} \
         --password=${PASSWORD} \
@@ -111,7 +111,7 @@ function import_mysql() {
 }
 
 # Export a PostgreSQL database inside a Docker container as a SQL file
-function export_postgresql() {
+export_postgresql() {
     docker exec ${CONTAINER} \
         pg_dump \
         -U ${USERNAME} \
@@ -119,7 +119,7 @@ function export_postgresql() {
 }
 
 # Import a SQL file into a Docker container containing a PostgreSQL database
-function import_postgresql() {
+import_postgresql() {
     cat ${DB_FILE} | docker exec -i ${CONTAINER} \
         psql \
         -d ${DATABASE} \
@@ -127,7 +127,7 @@ function import_postgresql() {
 }
 
 # Deleting files older than ${RETENTION} days
-function purge_backups() {
+purge_backups() {
     find ${BACKUP_DIRECTORY} \
         -type f \
         -mtime +${RETENTION} \
@@ -137,7 +137,7 @@ function purge_backups() {
 }
 
 # Export manager
-function _export() {
+_export() {
     case ${ENGINE} in
         mysql) export_mysl ;;
         postgresql) export_postgresql ;;
@@ -148,7 +148,7 @@ function _export() {
 }
 
 # Import manager
-function _import() {
+_import() {
     case ${ENGINE} in
         mysql) import_mysql ;;
         postgresql) import_postgresql ;;
@@ -159,7 +159,7 @@ function _import() {
 }
 
 # Operation controller
-function _exec() {
+_exec() {
     local call=
 
     case ${OPERATION} in
@@ -174,7 +174,7 @@ function _exec() {
     fi
 }
 
-function main() {
+main() {
     parse $@ || exit 1
 
     test -d ${BACKUP_DIRECTORY} || mkdir -p ${BACKUP_DIRECTORY}

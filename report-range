@@ -15,8 +15,11 @@ END_DATE=${2:-$(date --date='-+ month' -I)}
 OUTPUT=${3:-"report.html"}
 # Starting point
 STARTING_POINT=${4:-"/var/log/nginx/access.log"}
+# Target domain and subdomains only
+GREP_FILTER=${GREP_FILTER:-"theobori.cafe"}
 
-function print_help() {
+# Help display function
+print_help() {
     cat <<EOF
 ${FILENAME}
 Version ${VERSION}
@@ -26,11 +29,12 @@ ${FILENAME} <start_date> <end_date> <output path> <file(s)/dir>
 EOF
 } 
 
-function report() {
+report() {
     local files=$(find ${STARTING_POINT} -maxdepth 1 -newerct "${START_DATE}" ! -newerct "${END_DATE}")
 
     zcat -f ${files} \
-        | goaccess -a -o ${OUTPUT} --log-format=COMBINED
+        | grep ${GREP_FILTER} \
+        | goaccess -o ${OUTPUT} --log-format=COMBINED
 }
 
 # Current week date args
@@ -48,7 +52,7 @@ function report() {
 
 # Help display function
 
-function main() {
+main() {
     [[ ${#@} -lt 3 ]] && print_help && exit 1
     
     report ${@}

@@ -23,7 +23,7 @@ BACKUP_DIRECTORY=${BACKUP_DIRECTORY:-"/backup"}
 DESTINATION_POINT="${BACKUP_DIRECTORY}/docker-volumes-${DATE}.tar.gz"
 
 # Help display function
-function print_help() {
+print_help() {
     cat <<EOF
 ${FILENAME}
 Version ${VERSION}
@@ -38,7 +38,7 @@ EOF
 }
 
 # Parsing the CLI arguments with the built-in getopts command
-function parse() {
+parse() {
     while getopts "hv" arg; do
         case ${arg} in
             h)
@@ -62,7 +62,7 @@ function parse() {
 
 # Exporting and packing Docker volumes
 # selected with the source points as a Tarball
-function export_docker_volumes() {
+export_docker_volumes() {
     local args=""
 
     for source_point in ${SOURCE_POINTS[@]}
@@ -80,7 +80,7 @@ function export_docker_volumes() {
 }
 
 # Deleting files older than ${RETENTION} days
-function purge_backups() {
+purge_backups() {
     find ${BACKUP_DIRECTORY} \
         -type f \
         -mtime +${RETENTION} \
@@ -89,7 +89,7 @@ function purge_backups() {
     echo "Deleted files older than ${RETENTION} days"
 }
 
-function main() {
+main() {
     parse $@ || exit 1
 
     mkdir -p ${BACKUP_DIRECTORY}
