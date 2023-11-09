@@ -11,7 +11,7 @@ DATE=$(date "+%Y-%m-%d")
 # Retention days amount
 RETENTION=${RETENTION:-3}
 # Backup directory path
-BACKUP_DIRECTORY=${BACKUP_DIRECTORY:-"/backup"}
+BACKUP_DIR=${BACKUP_DIR:-"/backup"}
 
 # For these variables, you can fill them inside the file
 # or using CLI arguments.
@@ -90,7 +90,7 @@ parse() {
         return 1
     fi
 
-    DESTINATION=${BACKUP_DIRECTORY}/${ENGINE}-${CONTAINER}-${DATE}
+    DESTINATION=${BACKUP_DIR}/${ENGINE}-${CONTAINER}-${DATE}
 }
 
 # Export a MySQL database inside a Docker container as a SQL file
@@ -128,12 +128,12 @@ import_postgresql() {
 
 # Deleting files older than ${RETENTION} days
 purge_backups() {
-    find ${BACKUP_DIRECTORY} \
+    find ${BACKUP_DIR} \
         -type f \
         -mtime +${RETENTION} \
         -delete
     
-    echo "Deleted files older than ${RETENTION} days in ${BACKUP_DIRECTORY}"
+    echo "Deleted files older than ${RETENTION} days in ${BACKUP_DIR}"
 }
 
 # Export manager
@@ -177,7 +177,7 @@ _exec() {
 main() {
     parse $@ || exit 1
 
-    test -d ${BACKUP_DIRECTORY} || mkdir -p ${BACKUP_DIRECTORY}
+    test -d ${BACKUP_DIR} || mkdir -p ${BACKUP_DIR}
 
     echo "Starting database ${OPERATION}"
     

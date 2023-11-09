@@ -18,9 +18,9 @@ SOURCE_POINTS=( $@ )
 # Retention days amount
 RETENTION=${RETENTION:-3}
 # Backup directory path
-BACKUP_DIRECTORY=${BACKUP_DIRECTORY:-"/backup"}
+BACKUP_DIR=${BACKUP_DIR:-"/backup"}
 # dockerv destination point
-DESTINATION_POINT="${BACKUP_DIRECTORY}/docker-volumes-${DATE}.tar.gz"
+DESTINATION_POINT="${BACKUP_DIR}/docker-volumes-${DATE}.tar.gz"
 
 # Help display function
 print_help() {
@@ -81,18 +81,18 @@ export_docker_volumes() {
 
 # Deleting files older than ${RETENTION} days
 purge_backups() {
-    find ${BACKUP_DIRECTORY} \
+    find ${BACKUP_DIR} \
         -type f \
         -mtime +${RETENTION} \
         -delete
     
-    echo "Deleted files older than ${RETENTION} days in ${BACKUP_DIRECTORY}"
+    echo "Deleted files older than ${RETENTION} days in ${BACKUP_DIR}"
 }
 
 main() {
     parse $@ || exit 1
 
-    mkdir -p ${BACKUP_DIRECTORY}
+    mkdir -p ${BACKUP_DIR}
 
     echo "Starting Docker volumes export"
 
