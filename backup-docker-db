@@ -133,7 +133,7 @@ purge_backups() {
         -mtime +${RETENTION} \
         -delete
     
-    echo "Deleted files older than ${RETENTION} days"
+    echo "Deleted files older than ${RETENTION} days in ${BACKUP_DIRECTORY}"
 }
 
 # Export manager
