@@ -7,6 +7,8 @@ VERSION=0.0.1
 # Script filename
 FILENAME=$(basename $0)
 
+# CLI arguments
+#
 # Start date range
 START_DATE=${1:-$(date --date='-1 month' -I)}
 # End date range
@@ -15,7 +17,12 @@ END_DATE=${2:-$(date --date='+1 month' -I)}
 OUTPUT=${3:-"report.html"}
 # Starting point
 STARTING_POINT=${4:-"/var/log/nginx/access.log*"}
-# Target domain and subdomains only
+
+# Environment variables
+#
+# goaccess configuration
+CONF=${CONF:-"/etc/goaccess/goaccess.conf"}
+#Target domain and subdomains only
 GREP_FILTER=${GREP_FILTER:-"theobori.cafe"}
 
 # Help display function
@@ -29,6 +36,15 @@ ${FILENAME} <start_date> <end_date> <output path> <file(s)/dir>
 
 The following environment variables are overridable:
 - GREP_FILTER
+- CONF
+
+Usage example:
+
+CONF="custom.conf" ${FILENAME} \\
+    "$(date --date='-1 month' -I)" \\
+    "$(date --date='+1 month' -I)" \\
+    "report.html" \\
+    "web_server_logs/*.log"
 EOF
 } 
 
@@ -43,24 +59,8 @@ report() {
 
     zcat -f ${files} \
         | grep ${GREP_FILTER} \
-        | goaccess -o ${OUTPUT} --log-format=COMBINED
+        | goaccess -o ${OUTPUT} --log-format=COMBINED -p ${CONF}
 }
-
-# Current week date args
-# $(date --date='-1 week' -I) $(date --date='+1 week' -I)
-#
-# Current day date args
-# $(date -I) $(date --date='+1 day' -I)
-#
-# Usage example
-#
-# ./report-range \
-#     "$(date --date='-1 month' -I)" \
-#     "$(date --date='+1 month' -I)" \
-#     "report.html" \
-#     "/home/user/tests/gocasses/"
-
-# Help display function
 
 main() {
     if [[ ${#@} -lt 3 ]]
