@@ -3,15 +3,15 @@
 set -e
 
 # Script version
-VERSION=0.0.1
+readonly VERSION=0.0.1
 # Script filename
-FILENAME=$(basename $0)
+readonly FILENAME=$(basename ${0})
 # Current date
-DATE=$(date "+%Y-%m-%d")
+readonly DATE=$(date "+%Y-%m-%d")
 # Retention days amount
-RETENTION=${RETENTION:-3}
+readonly RETENTION=${RETENTION:-3}
 # Backup directory path
-BACKUP_DIR=${BACKUP_DIR:-"/backup"}
+readonly BACKUP_DIR=${BACKUP_DIR:-"/backup"}
 
 # For these variables, you can fill them inside the file
 # or using CLI arguments.
@@ -37,7 +37,7 @@ DESTINATION=
 
 # Help display function
 print_help() {
-    cat <<EOF
+    cat <<USAGE
 ${FILENAME}
 Version ${VERSION}
 
@@ -51,24 +51,24 @@ Optional arguments
   -f        Database file (import only)
   -k        Operation kind (import, export)
   -v        Print the script version
-EOF
+USAGE
 }
 
 # Parsing the CLI arguments with the built-in getopts command
 parse() {
     while getopts "k:f:c:e:u:p:d:hvn" arg; do
         case ${arg} in
-            u) USERNAME=${USERNAME:-$OPTARG} ;;
+            u) USERNAME=${USERNAME:-${OPTARG}} ;;
 
-            e) ENGINE=${ENGINE:-$OPTARG} ;;
+            e) ENGINE=${ENGINE:-${OPTARG}} ;;
 
-            p) PASSWORD=${PASSWORD:-$OPTARG} ;;
+            p) PASSWORD=${PASSWORD:-${OPTARG}} ;;
 
-            d) DATABASE=${DATABASE:-$OPTARG} ;;
+            d) DATABASE=${DATABASE:-${OPTARG}} ;;
 
-            c) CONTAINER=${CONTAINER:-$OPTARG} ;;
+            c) CONTAINER=${CONTAINER:-${OPTARG}} ;;
 
-            f) DB_FILE=${DB_FILE:-$OPTARG} ;;
+            f) DB_FILE=${DB_FILE:-${OPTARG}} ;;
 
             k) OPERATION=${OPTARG} ;;
 
@@ -175,7 +175,7 @@ _exec() {
 }
 
 main() {
-    parse $@ || exit 1
+    parse ${@} || exit 1
 
     test -d ${BACKUP_DIR} || mkdir -p ${BACKUP_DIR}
 
@@ -185,4 +185,4 @@ main() {
     purge_backups
 }
 
-main $@
+main ${@}

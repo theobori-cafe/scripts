@@ -3,28 +3,28 @@
 set -e
 
 # Script version
-VERSION=0.0.1
+readonly VERSION=0.0.1
 # Script filename
-FILENAME=$(basename $0)
+readonly FILENAME=$(basename ${0})
 # Current date
-DATE=$(date "+%Y-%m-%d")
+readonly DATE=$(date "+%Y-%m-%d")
 # https://github.com/theobori/dockerv
 #
 # dockerv source points
 #
 # You can replace $@ by the sources point you want
 # instead of passing CLI arguments
-SOURCE_POINTS=( $@ )
+readonly SOURCE_POINTS=( $@ )
 # Retention days amount
-RETENTION=${RETENTION:-3}
+readonly RETENTION=${RETENTION:-3}
 # Backup directory path
-BACKUP_DIR=${BACKUP_DIR:-"/backup"}
+readonly BACKUP_DIR=${BACKUP_DIR:-"/backup"}
 # dockerv destination point
-DESTINATION_POINT="${BACKUP_DIR}/docker-volumes-${DATE}.tar.gz"
+readonly DESTINATION_POINT="${BACKUP_DIR}/docker-volumes-${DATE}.tar.gz"
 
 # Help display function
 print_help() {
-    cat <<EOF
+    cat <<USAGE
 ${FILENAME}
 Version ${VERSION}
 
@@ -34,7 +34,7 @@ Optional arguments
 
 Usage example
 ${FILENAME} src1 src2 src3
-EOF
+USAGE
 }
 
 # Parsing the CLI arguments with the built-in getopts command
@@ -90,7 +90,7 @@ purge_backups() {
 }
 
 main() {
-    parse $@ || exit 1
+    parse ${@} || exit 1
 
     mkdir -p ${BACKUP_DIR}
 
@@ -100,4 +100,4 @@ main() {
     purge_backups
 }
 
-main $@
+main ${@}
