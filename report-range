@@ -58,7 +58,7 @@ report() {
     fi
 
     zcat -f ${files} \
-        | grep -P ${GREP_FILTER} \
+        | grep -P "${GREP_FILTER}" \
         | goaccess -o ${OUTPUT} --log-format=COMBINED -p ${CONF}
 }
 
