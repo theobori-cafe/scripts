@@ -59,7 +59,7 @@ report() {
 
     zcat -f ${files} \
         | grep -P "${GREP_FILTER}" \
-        | goaccess -o ${OUTPUT} --log-format=COMBINED -p ${CONF}
+        | goaccess -o ${OUTPUT} --log-format=COMBINED -p ${CONF} -
 }
 
 main() {
