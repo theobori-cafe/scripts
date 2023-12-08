@@ -40,4 +40,10 @@ help:
 	@echo "Uninstall the scripts with the following command"
 	@echo "sudo make uninstall"
 
-.PHONY: init clean install uninstall re help
+.PHONY: \
+	init \
+	clean \
+	install \
+	uninstall \
+	re \
+	help
