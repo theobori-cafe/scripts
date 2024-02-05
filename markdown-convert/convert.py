@@ -33,7 +33,7 @@ METADATA_REGEXS = {
     ),
 }
 
-BLOCK_RE = "```%s[\\s\S]*?```"
+BLOCK_RE = "```%s[\\s\\S]*?```"
 
 class PostMetadata:
     """
@@ -111,6 +111,7 @@ class PostConvert:
         
         if not data:
             return False
+        
 
         data = data.split("---")
         data = list(
