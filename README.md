@@ -1,10 +1,7 @@
-# ☕ scripts
+# Scripts
 
-## ℹ️ About
+![build](https://github.com/theobori-cafe/scripts/actions/workflows/build.yml/badge.svg)
 
-This repository contains magic scripts used for the website.
+[![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
 
-## 🎉 Tasks
-
-- [x] Backup scripts
-- [x] Update `markdown-convert`
+Automations I use within my infrastructure, the `backup-docker-volumes` script is deprecated and is not used anymore.

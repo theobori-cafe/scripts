@@ -3,3 +3,5 @@ __pycache__
 backup-all
 logs/
 *.html
+result
+.direnv

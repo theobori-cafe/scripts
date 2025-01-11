@@ -27,7 +27,7 @@ readonly GREP_FILTER=${GREP_FILTER:-"theobori.cafe"}
 
 # Help display function
 print_help() {
-    cat <<USAGE
+  cat <<USAGE
 ${FILENAME}
 Version ${VERSION}
 
@@ -49,27 +49,25 @@ USAGE
 }
 
 report() {
-    local -r files=$(find ${STARTING_POINT} -maxdepth 1 -newermt "${START_DATE}" ! -newermt "${END_DATE}")
+  local -r files=$(find ${STARTING_POINT} -maxdepth 1 -newermt "${START_DATE}" ! -newermt "${END_DATE}")
 
-    if [[ -z ${files} ]]
-    then
-        echo "Missing files to process !"
-        exit 1
-    fi
+  if [[ -z ${files} ]]; then
+    echo "Missing files to process !"
+    exit 1
+  fi
 
-    zcat -f ${files} \
-        | grep -P "${GREP_FILTER}" \
-        | goaccess -o ${OUTPUT} --log-format=COMBINED -p ${CONF} -
+  zcat -f ${files} |
+    grep -P "${GREP_FILTER}" |
+    goaccess -o ${OUTPUT} --log-format=COMBINED -p ${CONF} -
 }
 
 main() {
-    if [[ ${#@} -lt 3 ]]
-    then
-        print_help
-        exit 1
-    fi
-    
-    report
+  if [[ ${#@} -lt 3 ]]; then
+    print_help
+    exit 1
+  fi
+
+  report
 }
 
 main ${@}
